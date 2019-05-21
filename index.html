@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Tab</title>
+    <style>
+      /*❗️请按序号阅读和跟写！*/
+
+      .tab ul,
+      .tab li {
+        list-style: none;  /*①首先，把列表 li 前边的 . 去掉；*/
+        
+        margin: 0;
+        padding: 0;  /*②把默认样式都给去掉，便于我们后边去做控制；*/
+      }
+
+      .tab {
+        border: 1px solid #ccc;  /*③给 tab 加一个“边框”，使其有 tab 的感觉；*/
+        
+        border-top: none;  /*❗️⑮由于下边的 tab-header 我们加了一个边框，
+                           如果这里 tab 也加一个上边框的话，最后两个边框重合会很粗，
+                           所以我们把这里的上边框给去掉。*/
+      }
+
+      .tab .tab-header::after {  /*⑤由于上一步用了“浮动”，所以我们要利用“伪元素”来清除浮动，使其撑开父容器；*/
+        content: '';
+        display: block;
+        clear: both;
+      }
+
+      .tab .tab-header > li {
+        float: left;  /*④利用“浮动”使可点击的 tab-header 部分的 li 变为“水平排列”；*/
+        
+        border: 1px solid #ccc;  /*⑥给 tab-header 里边的 li 加一个“边框”；*/
+        width: calc(25% - 2px);  /*⑦让这 4 个 li 均匀撑满宽度（100%/4 - 2px边框）；*/
+        
+        text-align: center;  /*⑧使文字水平居中；*/
+        line-height: 30px;  /*⑨加一个行高，拉开距离；*、
+        
+        cursor: pointer;  /*⑩做出鼠标放上去“有手的效果”，就感觉像一个链接一样；*/
+      } 
+
+      .tab .tab-header > li.active {  /*⑪给 active 的 li 添加一些样式，使其区分于其它 li；*/
+        background-color: #ccc;
+        color: #fff;
+      }
+
+      .tab .tab-container > li {
+        display: none;  /*❗️⑬由于我们上边可点击的小菜单 li 是和下边的“内容”一一对应的，
+                        且各个“内容” li 是“重叠”的。点击谁，谁才显示出来（即展示的时候只展示一个，让其他的隐藏）！
+                        所以我们先都进行“隐藏”；*/
+        
+        height: 100px;  /*⑫给“内容部分”的 li 添加一个“高度”和“padding”;*/
+        padding: 10px;
+      }
+
+      .tab .tab-container > li.active {
+        display: block;  /*⑭我们初始化给“active 状态”的 li 通过 block 显示出来，使其占据一整行；*/
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tab">  <!--1️⃣Tab 切换一般都包括两部分：“可以点击的小菜单”和“各个菜单对应的内容”。-->
+      <ul class="tab-header">  <!--2️⃣所以我们这里增加一个类名：tab-header。然后由于里边每部分都长得很像，所以用列表的形式来展示。-->
+        <li>首页</li>
+        <li class="active">专栏</li>  <!--3️⃣表示初始状态时，“专栏”为 active 状态。-->
+        <li>心情</li>
+        <li>联系</li>
+      </ul>
+      
+      <ul class="tab-container">  <!--4️⃣每个可点击的 Tab 小菜单都对应一块“内容”，当我点击时，对应的“内容也会展示出来”。我们取一个类名为 tab-container。-->
+        <li>
+          <p>Hello,「公众号 | 前端一万小时」</p>
+        </li>
+        <li class="active">
+          <p>公众号 | 前端一万小时</p>
+        </li>
+        <li>
+          <p>「学而不思则罔」</p>
+        </li>
+        <li>
+          <p>微信公众号：前端一万小时</p>
+        </li>
+      </ul>
+    </div>
+    <script>
+      //1️⃣为了后边使用方便，我们一开始就写个方法，让 $() 和 $$() 可以在代码编辑器中直接使用；
+      function $(selector) {
+        return document.querySelector(selector)
+      }
+      function $$(selector) {
+        return document.querySelectorAll(selector)
+      }
+
+
+      var tabHeaders = $$(".tab .tab-header>li")  /*2️⃣选择 tab-header 里边的所有 li 元素，
+                                                  形成一个 Nodelist 对象；*/
+      var tabPanels = $$(".tab .tab-container>li")  /*3️⃣选择 tab-container 里边所有的 li 元素，
+                                                    形成一个 Nodelist 对象；*/
+
+      tabHeaders.forEach(function(tab){  //4️⃣我们可以通过 Nodelist 拥有的 forEach 方法来遍历列表里的每一项；
+        tab.onclick = function() {  //5️⃣我们给“每一项 tab”都绑定一个 onclick “点击”事件；
+          tabHeaders.forEach(function(node){
+            node.classList.remove("active")  //6️⃣我们再一次遍历所有项，将每一项的“class 属性”都去掉“active”；
+          })
+          
+          this.classList.add("active")  //7️⃣同时，给“点击”的这项（我们用 this 能很好的表示“点击的这项”），增加一个“class 属性”为“active”；
+          
+          
+          /*🏆🏆🏆8️⃣-①：接下来，我们需要做的就是：我们必须知道，在这个 Nodelist 里，
+          我们“点击”的“每一项”，它们的“索引”是多少？
+          因为，一旦知道了“点击项”的索引，我们也就知道与之对应的“平行数组”——tab-container 的“索引”。
+          
+          而一旦有了“索引”，我们就可以“增添”点击项与之对应的“内容快”的 active 状态！*/
+          /*8️⃣-②：但由于我们的 Nodelist 不是一个真正的“数组”，它是“类数组对象”，不能直接去使用 indexOf() 方法查找“点击项”的“索引”。
+          但我们可以借用 .call() 的函数调用形式，将 tabHeaders 传入进去，从而很轻易地得到“索引”。
+          */
+          var index = Array.prototype.indexOf.call(tabHeaders, this)  //8️⃣-③：这里的 this 指向“点击的这项”；
+          
+
+          tabPanels.forEach(function(node){
+            node.classList.remove("active")  /*9️⃣同理第6️⃣步，点击时，我们遍历“内容块”的每一项，
+                                             先将每一项的“class 属性”都去掉“active”；*/
+          })
+          tabPanels[index].classList.add("active")  /*🔟最后，将第8️⃣-③步得到的“索引”用到 tabPanels 上，
+                                                    增加一个“class 属性”为“active”。*/
+
+        }
+      })      
+    </script>
+  </body>
+</html>
